@@ -4,12 +4,12 @@ State
 
 from __future__ import annotations
 
-import copy
 import random
 from typing import List
 
 from ...base import State as BaseState
 from .direction import Direction
+from .action import Action
 
 class State(BaseState):
     """
@@ -26,20 +26,44 @@ class State(BaseState):
         """
         self.size = size
         self.unit = unit
-        # Initialize a `size` x `size` board filled with empty values
-        self._board = [row[:] for row in [[self._EMPTY] * self.size] * self.size]
+        self._clear()
 
     def __eq__(self, other: State):
         return self._board == other._board
 
     def __str__(self):
-        return "\n".join(["".join([f"{tile:4}" for tile in row]) for row in self._board])
+        return "\n".join([
+            "".join([
+                f"{tile:{self.size}}" if tile != self._EMPTY else " " * self.size for tile in row
+            ]) for row in self._board
+        ])
 
-    def seeded(self) -> int:
+    def reset(self):
+        self._clear()
+        self._seeded()
+
+    def executed(self, action: Action) -> float:
+        is_changed = self._collapsed(action.direction)
+        return self._seeded() if is_changed else 0
+
+    def is_ended(self):
+        return not self._is_collapsible()
+
+    def build(self) -> State:
+        return State(self.size, self.unit)
+
+    def _clear(self):
+        """
+        Clear board.
+        """
+        # Initialize a `size` x `size` board filled with empty values
+        self._board = [row[:] for row in [[self._EMPTY] * self.size] * self.size]
+
+    def _seeded(self) -> int:
         """
         Randomly seeds a new tile in an empty spot on the board with unit value.
         # Returns the value of the new tile if it is successfully seeded,
-            otherwise returns empty value if the board has no spot for seeding new tile.
+            otherwise returns `0` if the board has no spot for seeding new tile.
         # Examples
             0   2   0   0           0   2   0   0
             0   0   0   0      ⇒    0   0   0   0
@@ -49,14 +73,14 @@ class State(BaseState):
         flattened_board = [tile for row in self._board for tile in row]
         empty_indices = [index for index, tile in enumerate(flattened_board) if tile == self._EMPTY]
         if len(empty_indices) == 0:
-            return self._EMPTY
+            return 0
         index = random.choice(empty_indices)
         self._board[index // self.size][index % self.size] = self.unit
         return self.unit
 
-    def collapsed(self, direction: Direction) -> State:
+    def _collapsed(self, direction: Direction) -> bool:
         """
-        Collapse the entire board in a given direction
+        Collapse the entire board in a given direction.
         # Arguments
             direction: Direction. Collapsing direction.
         # Returns a flag indicates whether the board is changed after collapsing or not.
@@ -72,7 +96,7 @@ class State(BaseState):
             self._paved(direction, i, collapsed_array)
         return self != old_state
 
-    def is_collapsible(self) -> bool:
+    def _is_collapsible(self) -> bool:
         """
         # Returns a flag indicates whether the board is collapsible or not.
         """
@@ -81,15 +105,9 @@ class State(BaseState):
             column = [r[i] for r in self._board]
             for j in range(self.size):
                 if (row[j] == self._EMPTY or column[j] == self._EMPTY
-                        or j < self.size and (row[j] == row[j + 1] or column[j] == column[j + 1])):
+                        or j > 0 and (row[j] == row[j - 1] or column[j] == column[j - 1])):
                     return True
         return False
-
-    def clone(self) -> State:
-        """
-        # Returns new cloned `State`.
-        """
-        return copy.deepcopy(self)
 
     def _peel(self, direction: Direction, index: int) -> List[int]:
         """
@@ -140,13 +158,13 @@ class State(BaseState):
     def _collapse(array: List[int], empty_element: int) -> List[int]:
         """
         Slide entire elements of an array as far as possible to the left side.
-        If two elements of the same number collide while moving, they will merge into an element
-            with the total value of the two elements that collided.
+        If two elements of the same number collide while moving,
+            they will merge into an element with the total value of the two elements that collided.
         The resulting element cannot merge with another element again in the same move.
         # Arguments
             array: List[int]. Original array.
             empty_element: int. Value of empty element.
-        # Returns a collapsed array
+        # Returns a collapsed array.
         # Examples
             1. No elements merged
                 0   2   0   0      ⇒    2   0   0   0
