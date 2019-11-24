@@ -17,7 +17,7 @@ class StateBuilder(BaseStateBuilder):
     def set_size(self, size: int):
         """
         # Arguments
-            size: Int. The size of the board.
+            size: int. The size of the board.
         """
         self.size = size
         return self
@@ -25,7 +25,7 @@ class StateBuilder(BaseStateBuilder):
     def set_unit(self, unit: int):
         """
         # Arguments
-            unit: Int. Unit value for tile, other valid values are powers of this unit value.
+            unit: int. Unit value for tile, other valid values are powers of this unit value.
         """
         self.unit = unit
         return self

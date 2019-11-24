@@ -4,7 +4,9 @@
 - Book: [Deep Reinforcement Learning Hands-On](https://www.packtpub.com/big-data-and-business-intelligence/deep-reinforcement-learning-hands)
 - Gameplay: [Wiki](https://en.wikipedia.org/wiki/2048_(video_game)#Gameplay)
 
-## 2. Installing prerequisites
+## 2. Prerequisites
+- `tensorflow`
+- `keras`
 
 ## 3. Running
 ```

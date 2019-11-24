@@ -2,13 +2,13 @@
 Direction
 """
 
-from enum import Enum, auto
+from enum import Enum
 
 class Direction(Enum):
     """
     Direction
     """
-    LEFT = auto()
-    RIGHT = auto()
-    UP = auto()
-    DOWN = auto()
+    LEFT = 0
+    RIGHT = 1
+    UP = 2
+    DOWN = 3

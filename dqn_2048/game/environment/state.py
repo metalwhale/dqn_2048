@@ -21,8 +21,8 @@ class State(BaseState):
     def __init__(self, size: int, unit: int):
         """
         # Arguments
-            size: Int. The size of the board.
-            unit: Int. Unit value for tile, other valid values are powers of this unit value.
+            size: int. The size of the board.
+            unit: int. Unit value for tile, other valid values are powers of this unit value.
         """
         self.size = size
         self.unit = unit
@@ -48,6 +48,13 @@ class State(BaseState):
 
     def is_ended(self):
         return not self._is_collapsible()
+
+    @property
+    def data(self) -> List[int]:
+        """
+        # Returns list value of the flattened board.
+        """
+        return [tile for row in self._board for tile in row]
 
     def _clear(self):
         """

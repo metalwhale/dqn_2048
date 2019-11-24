@@ -27,3 +27,17 @@ class Action(BaseAction):
     @staticmethod
     def random() -> Action:
         return Action(choice(list(Direction)))
+
+    @staticmethod
+    def space_size() -> int:
+        """
+        # Returns number of available actions.
+        """
+        return len(Direction)
+
+    @property
+    def data(self) -> int:
+        """
+        # Returns int value of the direction.
+        """
+        return self.direction.value
