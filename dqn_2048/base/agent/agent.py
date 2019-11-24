@@ -2,13 +2,14 @@
 Agent
 """
 
-from typing import Tuple, Type
+from typing import Tuple
 
 from collections import deque
 from random import uniform, sample
 
 from ..environment.state import State
 from ..environment.action import Action
+from ..environment.action_builder import ActionBuilder
 from ..environment.environment import Environment
 from .quality_builder import QualityBuilder
 from .experience import Experience
@@ -21,7 +22,7 @@ class Agent:
     def __init__(
             self,
             quality_builder: QualityBuilder,
-            action_type: Type[Action],
+            action_builder: ActionBuilder,
             batch_size: int,
             experience_counts: int,
             starting_step: int,
@@ -33,7 +34,7 @@ class Agent:
         """
         # Arguments
             quality_builder: QualityBuilder. Quality builder.
-            action_type: Type[Action]. Action type.
+            action_builder: ActionBuilder. Action builder.
             batch_size: int. The batch size sampled from the experience buffer.
             experience_counts: int. The maximum capacity of the buffer.
             starting_step: int. The count of steps we wait for before starting training
@@ -45,7 +46,7 @@ class Agent:
             epsilon_end: float. Ending positive epsilon value, less than `epsilon_start`.
             epsilon_decay_rate: int. The rate of epsilon decay schedule.
         """
-        self.action_type = action_type
+        self.action_builder = action_builder
         self.batch_size = batch_size
         self.starting_step = starting_step
         self.target_syncing_frequency = target_syncing_frequency
@@ -115,7 +116,7 @@ class Agent:
         )
         # With probability ε, select a random action, otherwise use quality model to predict
         if uniform(0, self.epsilon_start) < epsilon:
-            action = self.action_type.random()
+            action = self.action_builder.randomly_build()
         else:
             action = self._training_quality.predict(state)
         return action

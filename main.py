@@ -1,10 +1,11 @@
 # pylint: skip-file
 
+#%%
 """
 Main
 """
 
-from dqn_2048 import StateBuilder, Action, Environment, QualityBuilder, Agent
+from dqn_2048 import Direction, StateBuilder, ActionBuilder, Environment, QualityBuilder, Agent
 
 BOARD_SIZE = 4
 BOARD_UNIT = 2
@@ -22,14 +23,15 @@ EPSILON_DECAY_RATE = 10 ** 4
 STEPS_COUNT = 10 ** 5
 
 state_builder = StateBuilder().set_size(BOARD_SIZE).set_unit(BOARD_UNIT)
+action_buider = ActionBuilder()
 environment = Environment(state_builder)
 
 quality_builder = QualityBuilder().set_gamma(GAMMA) \
     .set_input_size(BOARD_SIZE ** 2) \
-    .set_output_size(Action.space_size()) \
+    .set_output_size(len(Direction)) \
     .set_learning_rate(LEARNING_RATE)
 agent = Agent(
-    quality_builder, Action,
+    quality_builder, action_buider,
     BATCH_SIZE, EXPERIENCE_COUNTS, STARTING_STEP, TARGET_SYNCING_FREQUENCY,
     EPSILON_START, EPSILON_END, EPSILON_DECAY_RATE
 )
@@ -41,3 +43,5 @@ for step in range(STEPS_COUNT):
         last_state, reward = agent.play(Environment(state_builder))
         print(last_state)
         print(reward, "\n")
+
+# %%

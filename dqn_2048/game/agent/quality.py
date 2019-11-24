@@ -32,8 +32,9 @@ class Quality(BaseQuality):
             learning_rate: float. Learning rate of the optimizer.
         """
         super().__init__(gamma)
+        self.output_size = output_size
         self.model = self.__create_model(input_size, output_size)
-        self.model.compile(SGD(learning_rate), loss=self.__loss, metrics=["accuracy"])
+        self.model.compile(SGD(learning_rate), loss=self.__loss)
 
     def learn(self, batch: List[Experience]):
         state_list: List[State] = [experience.state for experience in batch]
@@ -41,7 +42,7 @@ class Quality(BaseQuality):
         action_data = []
         for experience in batch:
             action: Action = experience.action
-            data = [0] * action.space_size()
+            data = [0] * self.output_size
             data[action.data] = experience.value
             action_data.append(data)
         self.model.fit(array(state_data), array(action_data), verbose=0)
