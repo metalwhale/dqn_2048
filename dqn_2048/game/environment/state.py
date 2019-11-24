@@ -4,7 +4,7 @@ State
 
 from __future__ import annotations
 
-import random
+from random import choice
 from typing import List
 
 from ...base import State as BaseState
@@ -49,9 +49,6 @@ class State(BaseState):
     def is_ended(self):
         return not self._is_collapsible()
 
-    def build(self) -> State:
-        return State(self.size, self.unit)
-
     def _clear(self):
         """
         Clear board.
@@ -74,7 +71,7 @@ class State(BaseState):
         empty_indices = [index for index, tile in enumerate(flattened_board) if tile == self._EMPTY]
         if len(empty_indices) == 0:
             return 0
-        index = random.choice(empty_indices)
+        index = choice(empty_indices)
         self._board[index // self.size][index % self.size] = self.unit
         return self.unit
 

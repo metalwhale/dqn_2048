@@ -34,12 +34,6 @@ class State:
         # Returns a flag indicates whether the state is ended yet.
         """
 
-    @abstractmethod
-    def build(self) -> State:
-        """
-        # Returns newly state.
-        """
-
     def clone(self) -> State:
         """
         # Returns newly cloned state.

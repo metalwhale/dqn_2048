@@ -31,7 +31,4 @@ class StateBuilder(BaseStateBuilder):
         return self
 
     def build(self) -> State:
-        """
-        # Returns newly state.
-        """
         return State(self.size, self.unit)
