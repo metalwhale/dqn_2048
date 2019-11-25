@@ -35,10 +35,10 @@ class Agent:
         # Arguments
             quality_builder: QualityBuilder. Quality builder.
             action_builder: ActionBuilder. Action builder.
-            batch_size: int. The batch size sampled from the experience buffer.
+            batch_size: int. The batch size sampled from the transition buffer.
             experience_counts: int. The maximum capacity of the buffer.
             starting_step: int. The count of steps we wait for before starting training
-                to populate the experience buffer.
+                to populate the transition buffer.
             target_syncing_frequency: int. How frequently we sync model weights
                 from the training model to the target model,
                 which is used to get the value of the next state in the Bellman approximation.
@@ -54,10 +54,10 @@ class Agent:
         self.epsilon_end = epsilon_end
         self.epsilon_decay_rate = epsilon_decay_rate
         # Initialize parameters for Q(s, a) and Qˆ(s, a) with random weights
-        # and empty experience buffer
+        # and empty transition buffer
         self._training_quality = quality_builder.build()
         self._target_quality = quality_builder.build()
-        self._experiences = deque(maxlen=experience_counts)
+        self._transitions = deque(maxlen=experience_counts)
         self._step = 0
 
     def observe(self, environment: Environment):
@@ -75,14 +75,14 @@ class Agent:
         action = self._select_action(state)
         # Execute action a in an emulator and observe reward r and the next state s'
         transition = environment.execute(action)
-        # Calculate target
-        target_value = self._target_quality.calculate(transition)
-        # Store experience in the experience buffer
-        experience = Experience(transition.old_state, transition.action, target_value)
-        self._experiences.append(experience)
+        # Store transition in the transition buffer
+        self._transitions.append(transition)
         if self._step >= self.starting_step:
-            # Sample a random batch of experiences from the experience buffer
-            batch = sample(self._experiences, self.batch_size)
+            # Sample a random batch from the buffer
+            batch = [
+                Experience(t.old_state, t.action, self._target_quality.calculate(t))
+                for t in sample(self._transitions, self.batch_size)
+            ]
             # Update Q(s, a)
             self._training_quality.learn(batch)
         self._step += 1
