@@ -36,12 +36,20 @@ agent = Agent(
     EPSILON_START, EPSILON_END, EPSILON_DECAY_RATE
 )
 
+result = open("result.txt", "w+")
 for step in range(STEPS_COUNT):
     agent.observe(environment)
     if step % (STEPS_COUNT / 10) == 0:
-        print(f"Step: {step}")
-        last_state, reward = agent.play(Environment(state_builder))
-        print(last_state)
-        print(reward, "\n")
+        (
+            last_state, total_actions_count, wasted_actions_count, reward
+        ) = agent.play(Environment(state_builder))
+        result.write("\n".join([
+            f"STEP: {step}.",
+            f"Total actions: {total_actions_count}. Wasted actions: {wasted_actions_count}.",
+            f"Achieved reward: {reward}.",
+            str(last_state)
+        ]) + "\n" * 2)
+        result.flush()
+result.close()
 
 # %%

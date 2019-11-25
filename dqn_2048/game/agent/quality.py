@@ -20,7 +20,7 @@ from .experience import Experience
 
 class Quality(BaseQuality):
     """
-    Quality.
+    Quality
     """
 
     def __init__(self, gamma: float, input_size: int, output_size: int, learning_rate: float):
@@ -66,15 +66,15 @@ class Quality(BaseQuality):
         model = Sequential()
         model.add(Dense(16, activation="relu", input_shape=(input_size,)))
         model.add(Dense(12, activation="relu"))
-        model.add(Dense(output_size, activation="softmax"))
+        model.add(Dense(output_size))
         return model
 
     @staticmethod
-    def __loss(y_true: List[float], y_pred: List[float]) -> float:
+    def __loss(y_true, y_pred):
         """
         Calculate loss: L = (Qs,a - y) ^ 2
         """
-        mask = K.cast(y_true != 0.0, "float32")
-        loss = K.sum((y_pred - y_true) * mask)
-        loss **= 2
+        mask = K.cast(K.not_equal(y_true, 0.0), y_true.dtype)
+        loss_list = K.square(K.sum((y_pred - y_true) * mask, 1))
+        loss = K.mean(loss_list, axis=-1)
         return loss

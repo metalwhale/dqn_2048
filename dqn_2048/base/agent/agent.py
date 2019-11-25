@@ -87,22 +87,28 @@ class Agent:
             self._training_quality.learn(batch)
         self._step += 1
 
-    def play(self, environment: Environment) -> Tuple[State, float]:
+    def play(self, environment: Environment) -> Tuple[State, int, int, float]:
         """
         # Arguments
             environment: Environment. The environment to play inside.
-        # Returns the last state and the cumulative reward.
+        # Returns the last state, the count of total actions and wasted actions,
+            and the cumulative reward.
         """
         environment.reset()
+        total_actions_count = 0
+        wasted_actions_count = 0
         reward = 0
         while True:
             state = environment.current_state
             action = self._select_action(state)
             transition = environment.execute(action)
+            total_actions_count += 1
+            if transition.reward <= 0:
+                wasted_actions_count += 1
             reward += transition.reward
-            state = transition.state
-            if state.is_ended():
-                return (state, reward)
+            next_state = transition.state
+            if next_state.is_ended():
+                return (next_state, total_actions_count, wasted_actions_count, reward)
 
     def _select_action(self, state: State) -> Action:
         """

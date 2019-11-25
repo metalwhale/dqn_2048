@@ -13,7 +13,7 @@ from .action import Action
 
 class State(BaseState):
     """
-    Represents the board contains tiles.
+    State. Represents the board contains tiles.
     """
 
     _EMPTY: int = 0
@@ -70,7 +70,7 @@ class State(BaseState):
             otherwise returns `0` if the board has no spot for seeding new tile.
         # Examples
             0   2   0   0           0   2   0   0
-            0   0   0   0      ⇒    0   0   0   0
+            0   0   0   0      →    0   0   0   0
             0   0   0   0           0   0   0   2 ← new tile
             0   0   2   0           0   0   2   0
         """
@@ -90,7 +90,7 @@ class State(BaseState):
         # Returns a flag indicates whether the board is changed after collapsing or not.
         # Examples
             0   0   0   4                                   0   0   2   4
-            0   0   0   0       direction:  UP         ⇒    0   0   0   2
+            0   0   0   0       direction:  UP         →    0   0   0   2
             0   0   0   2                                   0   0   0   0
             0   0   2   0                                   0   0   0   0
         """
@@ -122,7 +122,7 @@ class State(BaseState):
         # Returns the array peeled off from the board.
         # Examples
             0   2   4   0       direction:  RIGHT
-            0   0   0   0       index: 0               ⇒    0   4   2   0
+            0   0   0   0       index: 0               →    0   4   2   0
             0   0   2   0
             0   0   0   0
         """
@@ -143,7 +143,7 @@ class State(BaseState):
             array: List[int]. Array to be copied.
         # Examples
             0   2   0   0       direction:  UP                  0   2   4   0
-            0   0   0   0       index: 3                   ⇒    0   0   0   0
+            0   0   0   0       index: 3                   →    0   0   0   0
             0   0   0   0       array:  4   0   2   0           0   0   2   0
             0   0   2   0                                       0   0   0   0
                                                                         ↑
@@ -171,13 +171,13 @@ class State(BaseState):
         # Returns a collapsed array.
         # Examples
             1. No elements merged
-                0   2   0   0      ⇒    2   0   0   0
+                0   2   0   0      →    2   0   0   0
             2. One element merged
-                0   2   2   4      ⇒    4   4   0   0
+                0   2   2   4      →    4   4   0   0
                                         ↑
                                         2+2
             3. Two elements merged
-                2   2   2   2      ⇒    4   4   0   0
+                2   2   2   2      →    4   4   0   0
                                         ↑   ↑
                                         2+2 2+2
         """
