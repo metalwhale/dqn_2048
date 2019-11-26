@@ -15,6 +15,10 @@ class State:
     """
 
     @abstractmethod
+    def __eq__(self, other: State) -> bool:
+        pass
+
+    @abstractmethod
     def reset(self):
         """
         Resets state.

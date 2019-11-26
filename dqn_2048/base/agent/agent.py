@@ -76,8 +76,9 @@ class Agent:
         # Execute action a in an emulator and observe reward r and the next state s'
         transition = environment.execute(action)
         # Store transition in the transition buffer
-        self._transitions.append(transition)
-        if self._step >= self.starting_step:
+        if transition not in self._transitions:
+            self._transitions.append(transition)
+        if self._step >= self.starting_step and len(self._transitions) >= self.batch_size:
             # Sample a random batch from the buffer
             batch = [
                 Experience(t.old_state, t.action, self._target_quality.calculate(t))

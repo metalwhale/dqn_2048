@@ -10,7 +10,6 @@ from numpy import array, argmax
 from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import SGD
-from keras import backend as K
 
 from ...base import Quality as BaseQuality
 from ..environment.state import State
@@ -34,18 +33,16 @@ class Quality(BaseQuality):
         super().__init__(gamma)
         self.output_size = output_size
         self.model = self.__create_model(input_size, output_size)
-        self.model.compile(SGD(learning_rate), loss=self.__loss)
+        self.model.compile(SGD(learning_rate), loss="mse")
 
     def learn(self, batch: List[Experience]):
         state_list: List[State] = [experience.state for experience in batch]
-        state_data = [state.data for state in state_list]
-        action_data = []
-        for experience in batch:
+        state_data = array([state.data for state in state_list])
+        action_data = self.model.predict(state_data)
+        for i, experience in enumerate(batch):
             action: Action = experience.action
-            data = [0] * self.output_size
-            data[action.data] = experience.value
-            action_data.append(data)
-        self.model.fit(array(state_data), array(action_data), verbose=0)
+            action_data[i][action.data] = experience.value
+        self.model.fit(state_data, action_data, verbose=0)
 
     def copied(self, training_quality: Quality):
         self.model.set_weights(training_quality.model.get_weights())
@@ -68,13 +65,3 @@ class Quality(BaseQuality):
         model.add(Dense(12, activation="relu"))
         model.add(Dense(output_size))
         return model
-
-    @staticmethod
-    def __loss(y_true, y_pred):
-        """
-        Calculate loss: L = (Qs,a - y) ^ 2
-        """
-        mask = K.cast(K.not_equal(y_true, 0.0), y_true.dtype)
-        loss_list = K.square(K.sum((y_pred - y_true) * mask, 1))
-        loss = K.mean(loss_list, axis=-1)
-        return loss

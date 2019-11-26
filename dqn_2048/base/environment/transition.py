@@ -2,6 +2,8 @@
 Transition
 """
 
+from __future__ import annotations
+
 from .state import State
 from .action import Action
 
@@ -22,3 +24,6 @@ class Transition:
         self.action = action
         self.reward = reward
         self.state = state
+
+    def __eq__(self, other: Transition) -> bool:
+        return self.state == other.state
