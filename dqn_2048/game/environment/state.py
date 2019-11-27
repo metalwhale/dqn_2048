@@ -28,7 +28,7 @@ class State(BaseState):
         self.unit = unit
         self._clear()
 
-    def __eq__(self, other: State):
+    def __eq__(self, other: State) -> bool:
         return self._board == other._board
 
     def __str__(self):
