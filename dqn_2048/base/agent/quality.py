@@ -42,6 +42,13 @@ class Quality:
             training_quality: Quality. The training quality model.
         """
 
+    @abstractmethod
+    def save(self, dir_path: str):
+        """
+        # Arguments
+            dir_path: str. Path of directory to save the quality model.
+        """
+
     def predict(self, state: State) -> Action:
         """
         Predict action to be executed.

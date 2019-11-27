@@ -94,6 +94,13 @@ class Agent:
             if next_state.is_ended():
                 return (next_state, transitions_count, reward)
 
+    def save(self, dir_path: str):
+        """
+        # Arguments
+            dir_path: str. Path of directory to save the training quality model.
+        """
+        self._training_quality.save(dir_path)
+
     def _transit(self, environment: Environment, is_learning: bool) -> Transition:
         """
         # Arguments

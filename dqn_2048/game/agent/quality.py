@@ -4,6 +4,8 @@ Quality
 
 from __future__ import annotations
 
+from datetime import datetime
+from os import makedirs, path
 from typing import List, Tuple
 
 from numpy import array, argmax
@@ -46,6 +48,11 @@ class Quality(BaseQuality):
 
     def copied(self, training_quality: Quality):
         self.model.set_weights(training_quality.model.get_weights())
+
+    def save(self, dir_path: str):
+        makedirs(dir_path, exist_ok=True)
+        now = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.model.save_weights(path.join(dir_path, f"{now}.hdf5"))
 
     def _select_action(self, state: State) -> Tuple[Action, float]:
         values = self.model.predict(array([state.data]))[0]

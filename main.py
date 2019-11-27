@@ -39,7 +39,7 @@ agent.set_epsilons(EPSILON_START, EPSILON_END, EPSILON_DECAY_RATE)
 result = open("result.txt", "w+")
 for step in range(STEPS_COUNT):
     agent.observe(environment)
-    if step % (STEPS_COUNT / 10) == 0:
+    if step % (10 ** 4) == 0:
         last_state, transitions_count, reward = agent.play(Environment(state_builder))
         result.write("\n".join([
             f"STEP: {step}.",
@@ -47,6 +47,8 @@ for step in range(STEPS_COUNT):
             str(last_state)
         ]) + "\n" * 2)
         result.flush()
+        if step > 0:
+            agent.save("result")
 result.close()
 
 # %%
