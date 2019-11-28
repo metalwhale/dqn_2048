@@ -38,10 +38,25 @@ class Quality(BaseQuality):
         self.model.compile(SGD(learning_rate), loss="mse")
 
     def learn(self, batch: List[Experience]):
-        state_list: List[State] = [experience.state for experience in batch]
+        augmented_batch: List[Experience] = []
+        for experience in batch:
+            state: State = experience.state
+            action: Action = experience.action
+            value = experience.value
+            augmented_batch.extend([
+                Experience(state, action, value),
+                Experience(state.rotate_left(), action.rotate_left(), value),
+                Experience(state.rotate_right(), action.rotate_right(), value),
+                Experience(state.turn(), action.turn(), value),
+                Experience(state.flip(), action.flip(), value),
+                Experience(state.flip().rotate_left(), action.flip().rotate_left(), value),
+                Experience(state.flip().rotate_right(), action.flip().rotate_right(), value),
+                Experience(state.flip().turn(), action.flip().turn(), value)
+            ])
+        state_list: List[State] = [experience.state for experience in augmented_batch]
         state_data = array([state.data for state in state_list])
         action_data = self.model.predict(state_data)
-        for i, experience in enumerate(batch):
+        for i, experience in enumerate(augmented_batch):
             action: Action = experience.action
             action_data[i][action.data] = experience.value
         self.model.fit(state_data, action_data, verbose=0)

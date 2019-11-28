@@ -31,4 +31,4 @@ class StateBuilder(BaseStateBuilder):
         return self
 
     def build(self) -> State:
-        return State(self.size, self.unit)
+        return State(size=self.size, unit=self.unit)

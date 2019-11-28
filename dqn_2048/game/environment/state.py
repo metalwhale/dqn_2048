@@ -18,15 +18,21 @@ class State(BaseState):
 
     _EMPTY: int = 0
 
-    def __init__(self, size: int, unit: int):
+    def __init__(self, board: List[List[int]] = None, size: int = None, unit: int = None):
         """
         # Arguments
-            size: int. The size of the board.
-            unit: int. Unit value for tile, other valid values are powers of this unit value.
+            board: List[List[int]] = None. Default board.
+            size: int = None. The size of the board.
+            unit: int = None. Unit value for tile, other valid values are powers of this unit value.
         """
-        self.size = size
-        self.unit = unit
-        self._clear()
+        if board is not None:
+            self.size = size or len(board)
+            self.unit = unit or min(tile for row in board for tile in row if tile != self._EMPTY)
+            self._board = board
+        else:
+            self.size = size
+            self.unit = unit
+            self._cleared()
 
     def __eq__(self, other: State) -> bool:
         return self._board == other._board
@@ -39,7 +45,7 @@ class State(BaseState):
         ])
 
     def reset(self):
-        self._clear()
+        self._cleared()
         self._seeded()
 
     def executed(self, action: Action) -> float:
@@ -56,12 +62,76 @@ class State(BaseState):
         """
         return [tile for row in self._board for tile in row]
 
-    def _clear(self):
+    def rotate_left(self) -> State:
         """
-        Clear board.
+        Rotates the board by 90 degrees to the left.
+        # Return newly left-rotating state.
+        # Examples
+            0   8   4   0           0   0   0   0
+            2   0   0   0      →    4   0   0   0
+            0   0   0   0           8   0   0   0
+            0   0   0   0           0   2   0   0
+        """
+        board = self._create_empty_board()
+        for i, row in enumerate(self._board):
+            for j, tile in enumerate(row):
+                board[self.size - 1 - j][i] = tile
+        return State(board=board, size=self.size, unit=self.unit)
+
+    def rotate_right(self) -> State:
+        """
+        Rotates the board by 90 degrees to the right.
+        # Return newly right-rotating state.
+        # Examples
+            0   8   4   0           0   0   2   0
+            2   0   0   0      →    0   0   0   8
+            0   0   0   0           0   0   0   4
+            0   0   0   0           0   0   0   0
+        """
+        board = self._create_empty_board()
+        for i, row in enumerate(self._board):
+            for j, tile in enumerate(row):
+                board[j][self.size - 1 - i] = tile
+        return State(board=board, size=self.size, unit=self.unit)
+
+    def turn(self) -> State:
+        """
+        Turns the board 180 degrees.
+        # Return newly turning state.
+        # Examples
+            0   8   4   0           0   0   0   0
+            2   0   0   0      →    0   0   0   0
+            0   0   0   0           0   0   0   2
+            0   0   0   0           0   4   8   0
+        """
+        board = self._create_empty_board()
+        for i, row in enumerate(self._board):
+            for j, tile in enumerate(row):
+                board[self.size - 1 - i][self.size - 1 - j] = tile
+        return State(board=board, size=self.size, unit=self.unit)
+
+    def flip(self) -> State:
+        """
+        Horizontally flips the board.
+        # Return newly flipping state.
+        # Examples
+            0   8   4   0           0   4   8   0
+            2   0   0   0      →    0   0   0   2
+            0   0   0   0           0   0   0   0
+            0   0   0   0           0   0   0   0
+        """
+        board = self._create_empty_board()
+        for i, row in enumerate(self._board):
+            for j, tile in enumerate(row):
+                board[i][self.size - 1 - j] = tile
+        return State(board=board, size=self.size, unit=self.unit)
+
+    def _cleared(self):
+        """
+        Clears the board.
         """
         # Initialize a `size` x `size` board filled with empty values
-        self._board = [row[:] for row in [[self._EMPTY] * self.size] * self.size]
+        self._board = self._create_empty_board()
 
     def _seeded(self) -> int:
         """
@@ -157,6 +227,12 @@ class State(BaseState):
                 self._board[index][i] = tile
             else:
                 self._board[i][index] = tile
+
+    def _create_empty_board(self) -> List[List[int]]:
+        """
+        # Returns new empty board.
+        """
+        return [row[:] for row in [[self._EMPTY] * self.size] * self.size]
 
     @staticmethod
     def _collapse(array: List[int], empty_element: int) -> List[int]:
