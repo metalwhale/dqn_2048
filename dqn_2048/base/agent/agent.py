@@ -70,7 +70,12 @@ class Agent:
         if self._step >= self.starting_step and len(self._transitions) >= self.batch_size:
             # Sample a random batch from the buffer
             batch = [
-                Experience(t.old_state, t.action, self._target_quality.calculate(t))
+                Experience(
+                    t.old_state, t.action,
+                    # Punish the "invalid" action that has no effect (doesn't change the state),
+                    # by forcing it to take the `0` value
+                    0 if t.old_state == t.state else self._target_quality.calculate(t)
+                )
                 for t in sample(self._transitions, self.batch_size)
             ]
             # Update Q(s, a)

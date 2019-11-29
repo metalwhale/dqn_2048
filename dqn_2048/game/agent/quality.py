@@ -83,7 +83,7 @@ class Quality(BaseQuality):
         # Returns the model.
         """
         model = Sequential()
-        model.add(Dense(16, activation="relu", input_shape=(input_size,)))
-        model.add(Dense(12, activation="relu"))
+        model.add(Dense(64, activation="relu", input_shape=(input_size,)))
+        model.add(Dense(32, activation="relu"))
         model.add(Dense(output_size))
         return model

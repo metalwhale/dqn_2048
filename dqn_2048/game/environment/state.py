@@ -4,7 +4,7 @@ State
 
 from __future__ import annotations
 
-from math import log
+from math import ceil, log
 from random import choice
 from typing import List
 
@@ -39,9 +39,10 @@ class State(BaseState):
         return self._board == other._board
 
     def __str__(self):
+        width = ceil(log(self._max, 10))
         return "\n".join([
             "".join([
-                f"{tile:{self.size}}" if tile != self._EMPTY else " " * self.size for tile in row
+                f"{tile:{width}}" if tile != self._EMPTY else " " * width for tile in row
             ]) for row in self._board
         ])
 
@@ -60,12 +61,10 @@ class State(BaseState):
     def data(self) -> List[float]:
         """
         Flattens then normalizes the values of board
-            with assumption that the max achievable in the game is `unit ** (size ** 2)`
         # Returns list value of the flattened board.
         """
-        max_achievable = self.unit ** (self.size ** 2)
         return [
-            tile if tile == self._EMPTY else log(tile) / log(max_achievable)
+            tile if tile == self._EMPTY else log(tile) / log(self._max)
             for row in self._board for tile in row
         ]
 
@@ -132,6 +131,13 @@ class State(BaseState):
             for j, tile in enumerate(row):
                 board[i][self.size - 1 - j] = tile
         return State(board=board, size=self.size, unit=self.unit)
+
+    @property
+    def _max(self) -> int:
+        """
+        Return the maximum achievable tile.
+        """
+        return self.unit ** (self.size ** 2)
 
     def _cleared(self):
         """
