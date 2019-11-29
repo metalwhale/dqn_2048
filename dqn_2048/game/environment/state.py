@@ -4,6 +4,7 @@ State
 
 from __future__ import annotations
 
+from math import log
 from random import choice
 from typing import List
 
@@ -56,11 +57,17 @@ class State(BaseState):
         return not self._is_collapsible()
 
     @property
-    def data(self) -> List[int]:
+    def data(self) -> List[float]:
         """
+        Flattens then normalizes the values of board
+            with assumption that the max achievable in the game is `unit ** (size ** 2)`
         # Returns list value of the flattened board.
         """
-        return [tile for row in self._board for tile in row]
+        max_achievable = self.unit ** (self.size ** 2)
+        return [
+            tile if tile == self._EMPTY else log(tile) / log(max_achievable)
+            for row in self._board for tile in row
+        ]
 
     def rotate_left(self) -> State:
         """
