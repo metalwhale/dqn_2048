@@ -2,6 +2,8 @@
 Quality builder
 """
 
+from numpy import inf
+
 from ...base import QualityBuilder as BaseQualityBuilder
 from .quality import Quality
 
@@ -14,6 +16,7 @@ class QualityBuilder(BaseQualityBuilder):
         self.input_size = 0
         self.output_size = 0
         self.gamma = 0.0
+        self.delta_clip = inf
         self.learning_rate = 0.0
 
     def set_input_size(self, input_size: int):
@@ -40,6 +43,14 @@ class QualityBuilder(BaseQualityBuilder):
         self.gamma = gamma
         return self
 
+    def set_delta_clip(self, delta_clip: float):
+        """
+        # Arguments
+            delta_clip: float. Clip value.
+        """
+        self.delta_clip = delta_clip
+        return self
+
     def set_learning_rate(self, learning_rate: float):
         """
         # Arguments
@@ -49,4 +60,7 @@ class QualityBuilder(BaseQualityBuilder):
         return self
 
     def build(self) -> Quality:
-        return Quality(self.gamma, self.input_size, self.output_size, self.learning_rate)
+        return Quality(
+            self.gamma, self.input_size, self.output_size,
+            self.delta_clip, self.learning_rate
+        )

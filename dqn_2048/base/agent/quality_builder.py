@@ -14,5 +14,5 @@ class QualityBuilder:
     @abstractmethod
     def build(self) -> Quality:
         """
-        # Returns newly quality.
+        # Returns new quality.
         """

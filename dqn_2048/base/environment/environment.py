@@ -52,6 +52,6 @@ class Environment:
         """
         # Arguments
             state_builder: StateBuilder. Builder of the state.
-        # Returns newly state.
+        # Returns new state.
         """
         return state_builder.build()

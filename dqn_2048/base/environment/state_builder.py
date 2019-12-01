@@ -14,5 +14,5 @@ class StateBuilder:
     @abstractmethod
     def build(self) -> State:
         """
-        # Returns newly state.
+        # Returns new state.
         """
