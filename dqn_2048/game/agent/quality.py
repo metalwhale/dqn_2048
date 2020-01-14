@@ -2,8 +2,6 @@
 Quality
 """
 
-from __future__ import annotations
-
 from datetime import datetime
 from os import makedirs, path
 from typing import Callable, List
@@ -52,8 +50,8 @@ class Quality(BaseQuality):
         masks = zeros((len(batch), self.output_size))
         dummies = random.rand(len(batch)) # Useless data, leaves the loss computation to lambda
         for i, experience in enumerate(batch):
-            state: State = experience.state
-            action: Action = experience.action
+            state = experience.state
+            action = experience.action
             value = experience.value
             state_data.append(state.data)
             targets[i][action.data] = value
@@ -61,15 +59,15 @@ class Quality(BaseQuality):
         state_data = array(state_data)
         targets = array(targets).astype("float")
         masks = array(masks).astype("float")
-        self._learning_model.train_on_batch([state_data, targets, masks], [dummies, targets])
+        self._learning_model.fit([state_data, targets, masks], [dummies, targets])
 
-    def copied(self, training_quality: Quality):
+    def copied(self, training_quality: "Quality"):
         self._model.set_weights(training_quality.weights)
 
     def save(self, dir_path: str):
         makedirs(dir_path, exist_ok=True)
         now = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self._model.save_weights(path.join(dir_path, f"{now}.hdf5"))
+        self._model.save_weights(path.join(dir_path, now + ".hdf5"))
 
     @property
     def weights(self) -> List[ndarray]:

@@ -2,9 +2,7 @@
 State
 """
 
-from __future__ import annotations
-
-from math import ceil, log
+from math import log
 from random import choice
 from typing import List, Tuple
 
@@ -16,7 +14,7 @@ class State(BaseState):
     State. Represents the board contains tiles.
     """
 
-    _EMPTY: int = 0
+    _EMPTY = 0
 
     def __init__(self, board: List[List[int]] = None, size: int = None, unit: int = None):
         """
@@ -34,14 +32,13 @@ class State(BaseState):
             self.unit = unit
             self._cleared()
 
-    def __eq__(self, other: State) -> bool:
+    def __eq__(self, other: "State") -> bool:
         return self._board == other._board
 
     def __str__(self):
-        width = ceil(log(self._max, 10))
         return "\n".join([
             "".join([
-                f"{tile:{width}}" if tile != self._EMPTY else " " * width for tile in row
+                "{0:5}".format(tile) if tile != self._EMPTY else " " * 5 for tile in row
             ]) for row in self._board
         ])
 

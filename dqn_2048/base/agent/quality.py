@@ -2,8 +2,6 @@
 Quality
 """
 
-from __future__ import annotations
-
 from abc import abstractmethod
 from random import choice
 from typing import List, Tuple
@@ -39,7 +37,7 @@ class Quality:
         """
 
     @abstractmethod
-    def copied(self, training_quality: Quality):
+    def copied(self, training_quality: "Quality"):
         """
         Copy weights from "training quality model".
         Used by the "target quality model" Qˆ.

@@ -1,6 +1,24 @@
 # pylint: skip-file
 
 # %%
+from os import name, environ
+from sys import argv
+from tensorflow import ConfigProto, Session
+from keras import backend as K
+
+if len(argv) < 2:
+    print("Usage: python main.py <gpu_id>")
+    exit()
+GPU_ID = argv[1]
+
+if not name == "nt":
+    environ["CUDA_VISIBLE_DEVICES"] = str(GPU_ID)
+    config = ConfigProto()
+    config.gpu_options.allow_growth = True
+    sess = Session(config=config)
+    K.set_session(sess)
+
+# %%
 from sys import stdout
 from keras import Model
 from keras.layers import Dense
@@ -54,7 +72,7 @@ agent.set_epsilons(EPSILON_START, EPSILON_END, EPSILON_DECAY_RATE)
 result = open("result.txt", "w+")
 for step in range(STEPS_COUNT):
     if step % 100 == 0:
-        stdout.write(str(step) + "\n")
+        stdout.write("STEP: {0}\n".format(step))
         stdout.flush()
     # Evaluate before observing next state
     if step % TARGET_SYNCING_FREQUENCY == 0:
@@ -70,8 +88,8 @@ for step in range(STEPS_COUNT):
                 best_reward = reward
                 best_state = last_state
         result.write("\n".join([
-            f"STEP: {step}. Average reward: {(total_reward / PLAY_EPISODES_COUNT):2}",
-            f"Achieved reward of best episode: {best_reward}",
+            "STEP: {0}. Average reward: {1:2}".format(step, total_reward / PLAY_EPISODES_COUNT),
+            "Achieved reward of best episode: {0}".format(best_reward),
             str(best_state)
         ]) + "\n" * 2)
         result.flush()

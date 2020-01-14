@@ -2,8 +2,6 @@
 State
 """
 
-from __future__ import annotations
-
 from abc import abstractmethod
 from copy import deepcopy
 
@@ -15,7 +13,7 @@ class State:
     """
 
     @abstractmethod
-    def __eq__(self, other: State) -> bool:
+    def __eq__(self, other: "State") -> bool:
         pass
 
     @abstractmethod
@@ -38,7 +36,7 @@ class State:
         # Returns a flag indicates whether the state is ended yet.
         """
 
-    def clone(self) -> State:
+    def clone(self) -> "State":
         """
         # Returns newly cloned state.
         """
