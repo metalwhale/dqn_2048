@@ -66,6 +66,7 @@ class Quality:
         Used by the "target quality model" Qˆ.
         # Arguments
             transition: Transition. The transition in the buffer.
+        # Returns the discounted cumulative reward.
         """
         next_state = transition.state
         reward = transition.reward

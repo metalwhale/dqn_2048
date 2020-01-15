@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from math import ceil, log
 from random import choice
-from typing import List
+from typing import List, Tuple
 
 from ...base import State as BaseState
 from .direction import Direction
@@ -51,8 +51,10 @@ class State(BaseState):
         self._seeded()
 
     def executed(self, action: Action) -> float:
-        is_changed = self._collapsed(action.direction)
-        return self._seeded() if is_changed else 0
+        is_changed, total_merged_value = self._collapsed(action.direction)
+        if is_changed:
+            self._seeded()
+        return total_merged_value
 
     def is_ended(self):
         return not self._is_collapsible()
@@ -71,7 +73,7 @@ class State(BaseState):
     @property
     def _max(self) -> int:
         """
-        Return the maximum achievable tile.
+        # Returns the maximum achievable tile.
         """
         return self.unit ** (self.size ** 2)
 
@@ -101,12 +103,13 @@ class State(BaseState):
         self._board[index // self.size][index % self.size] = self.unit
         return self.unit
 
-    def _collapsed(self, direction: Direction) -> bool:
+    def _collapsed(self, direction: Direction) -> Tuple[bool, int]:
         """
         Collapse the entire board in a given direction.
         # Arguments
             direction: Direction. Collapsing direction.
-        # Returns a flag indicates whether the board is changed after collapsing or not.
+        # Returns a flag indicates whether the board is changed after collapsing or not
+            and merged value.
         # Examples
             0   0   0   4                                   0   0   2   4
             0   0   0   0       direction:  UP         →    0   0   0   2
@@ -114,10 +117,12 @@ class State(BaseState):
             0   0   2   0                                   0   0   0   0
         """
         old_state = self.clone()
+        total_merged_value = 0
         for i in range(self.size):
-            collapsed_array = self._collapse(self._peel(direction, i), self._EMPTY)
+            collapsed_array, merged_value = self._collapse(self._peel(direction, i), self._EMPTY)
             self._paved(direction, i, collapsed_array)
-        return self != old_state
+            total_merged_value += merged_value
+        return (self != old_state, total_merged_value)
 
     def _is_collapsible(self) -> bool:
         """
@@ -184,7 +189,7 @@ class State(BaseState):
         return [row[:] for row in [[self._EMPTY] * self.size] * self.size]
 
     @staticmethod
-    def _collapse(array: List[int], empty_element: int) -> List[int]:
+    def _collapse(array: List[int], empty_element: int) -> Tuple[List[int], int]:
         """
         Slide entire elements of an array as far as possible to the left side.
         If two elements of the same number collide while moving,
@@ -193,7 +198,7 @@ class State(BaseState):
         # Arguments
             array: List[int]. Original array.
             empty_element: int. Value of empty element.
-        # Returns a collapsed array.
+        # Returns the collapsed array and sum of merged values.
         # Examples
             1. No elements merged
                 0   2   0   0      →    2   0   0   0
@@ -208,15 +213,17 @@ class State(BaseState):
         """
         collapsed_array = []
         is_merging = False
+        merged_values = []
         for element in array:
             if element == empty_element:
                 continue
             last_element = None if not collapsed_array else collapsed_array[-1]
             if element == last_element and not is_merging:
                 collapsed_array[-1] += element
+                merged_values.append(last_element + element)
                 is_merging = True
             else:
                 collapsed_array.append(element)
                 is_merging = False
         collapsed_array += [empty_element] * (len(array) - len(collapsed_array))
-        return collapsed_array
+        return (collapsed_array, sum(merged_values))
