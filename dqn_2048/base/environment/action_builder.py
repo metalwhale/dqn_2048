@@ -14,5 +14,5 @@ class ActionBuilder:
     @abstractstaticmethod
     def randomly_build() -> Action:
         """
-        # Returns randomly action.
+        # Returns random action.
         """

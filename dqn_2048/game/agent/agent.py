@@ -30,7 +30,7 @@ class Agent(BaseAgent):
         self.epsilon_decay_rate = decay_rate
 
     def _make_decision(self) -> Decision:
-        # With probability ε, select a random action, otherwise use quality model to predict
+        # With probability ε, select a random action, otherwise use quality model to act
         epsilon = max(
             self.epsilon_start - self._step / self.epsilon_decay_rate,
             self.epsilon_end

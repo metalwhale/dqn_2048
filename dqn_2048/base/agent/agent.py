@@ -39,7 +39,7 @@ class Agent:
                 to populate the transition buffer.
             target_syncing_frequency: int. How frequently we sync model weights
                 from the training model to the target model,
-                which is used to get the value of the next state in the Bellman approximation.
+                which is used for getting the value of the next state in the Bellman approximation.
         """
         self.action_builder = action_builder
         self.batch_size = batch_size
@@ -110,7 +110,7 @@ class Agent:
         """
         state = environment.current_state
         if not is_learning or self._make_decision() == Decision.EXPLOIT:
-            action = self._training_quality.predict(state)
+            action = self._training_quality.act(state)
         else:
             action = self.action_builder.randomly_build()
         # Execute action a in an emulator and observe reward r and the next state s'

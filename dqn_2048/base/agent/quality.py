@@ -49,15 +49,15 @@ class Quality:
             dir_path: str. Path of directory to save the quality model.
         """
 
-    def predict(self, state: State) -> Action:
+    def act(self, state: State) -> Action:
         """
-        Predict action to be executed.
+        Select an action to execute.
         Used by the "training quality model" Q.
         # Arguments
             state: State. Observed state.
         # Returns action with max value.
         """
-        return self._select_action(state)[0]
+        return self._predict(state)[0]
 
     def calculate(self, transition: Transition) -> float:
         """
@@ -72,11 +72,11 @@ class Quality:
         reward = transition.reward
         if next_state.is_ended():
             return reward
-        value = self._select_action(next_state)[1]
+        value = self._predict(next_state)[1]
         return reward + self.gamma * value
 
     @abstractmethod
-    def _select_action(self, state: State) -> Tuple[Action, float]:
+    def _predict(self, state: State) -> Tuple[Action, float]:
         """
         # Arguments
             state: State. Observed state.

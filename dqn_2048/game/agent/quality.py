@@ -16,11 +16,10 @@ from keras.models import Sequential
 from keras.optimizers import SGD
 from tensorflow import where
 
-from ...base import Quality as BaseQuality
+from ...base import Quality as BaseQuality, Experience
 from ..environment.state import State
 from ..environment.direction import Direction
 from ..environment.action import Action
-from .experience import Experience
 
 class Quality(BaseQuality):
     """
@@ -82,7 +81,7 @@ class Quality(BaseQuality):
         """
         return self._model.get_weights()
 
-    def _select_action(self, state: State) -> Tuple[Action, float]:
+    def _predict(self, state: State) -> Tuple[Action, float]:
         values = self._model.predict(array([state.data]))[0]
         max_index = argmax(values)
         return (Action(Direction(max_index)), values[max_index])
