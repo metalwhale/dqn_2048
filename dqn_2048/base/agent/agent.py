@@ -8,7 +8,6 @@ from random import sample
 from typing import Tuple
 
 from ..environment.state import State
-from ..environment.action_builder import ActionBuilder
 from ..environment.transition import Transition
 from ..environment.environment import Environment
 from .quality_builder import QualityBuilder
@@ -23,7 +22,6 @@ class Agent:
     def __init__(
             self,
             quality_builder: QualityBuilder,
-            action_builder: ActionBuilder,
             batch_size: int,
             experiences_count: int,
             starting_step: int,
@@ -32,7 +30,6 @@ class Agent:
         """
         # Arguments
             quality_builder: QualityBuilder. Quality builder.
-            action_builder: ActionBuilder. Action builder.
             batch_size: int. The batch size sampled from the transition buffer.
             experiences_count: int. The maximum capacity of the buffer.
             starting_step: int. The count of steps we wait for before starting training
@@ -41,7 +38,6 @@ class Agent:
                 from the training model to the target model,
                 which is used for getting the value of the next state in the Bellman approximation.
         """
-        self.action_builder = action_builder
         self.batch_size = batch_size
         self.starting_step = starting_step
         self.target_syncing_frequency = target_syncing_frequency
@@ -112,7 +108,7 @@ class Agent:
         if not is_learning or self._make_decision() == Decision.EXPLOIT:
             action = self._training_quality.act(state)
         else:
-            action = self.action_builder.randomly_build()
+            action = self._training_quality.randomly_act()
         # Execute action a in an emulator and observe reward r and the next state s'
         transition = environment.execute(action)
         if is_learning:
@@ -120,7 +116,7 @@ class Agent:
         # If the state has not been changed, keep randomly transiting until it is updated
         if transition.state == state:
             while True:
-                action = self.action_builder.randomly_build()
+                action = self._training_quality.randomly_act()
                 transition = environment.execute(action)
                 if transition.state != state:
                     break

@@ -5,7 +5,10 @@ Quality
 from __future__ import annotations
 
 from abc import abstractmethod
+from random import choice
 from typing import List, Tuple
+
+from numpy import ndarray
 
 from ..environment.state import State
 from ..environment.action import Action
@@ -17,12 +20,14 @@ class Quality:
     Quality. The Q in 'Q-learning', the soul of DQN.
     """
 
-    def __init__(self, gamma: float):
+    def __init__(self, gamma: float, output_size: int):
         """
         # Arguments
             gamma: float. The discount factor, used for Bellman approximation.
+            output_size: int. Size of the action output space.
         """
         self.gamma = gamma
+        self.output_size = output_size
 
     @abstractmethod
     def learn(self, batch: List[Experience]):
@@ -57,7 +62,13 @@ class Quality:
             state: State. Observed state.
         # Returns action with max value.
         """
-        return self._predict(state)[0]
+        return self._select(state)[0]
+
+    def randomly_act(self) -> Action:
+        """
+        # Returns random action.
+        """
+        return Action(choice(range(self.output_size)))
 
     def calculate(self, transition: Transition) -> float:
         """
@@ -72,13 +83,23 @@ class Quality:
         reward = transition.reward
         if next_state.is_ended():
             return reward
-        value = self._predict(next_state)[1]
+        value = self._select(next_state)[1]
         return reward + self.gamma * value
 
+    def _select(self, state: State) -> Tuple[Action, float]:
+        """
+        # Arguments
+            state: State. Used for selecting best action.
+        # Returns best action with a = argmaxa(Qs,a) and the corresponding value.
+        """
+        values = self._predict(state)
+        index = values.argmax()
+        return (Action(index), values[index])
+
     @abstractmethod
-    def _predict(self, state: State) -> Tuple[Action, float]:
+    def _predict(self, state: State) -> ndarray:
         """
         # Arguments
             state: State. Observed state.
-        # Returns a tuple contains action with a = argmaxa(Qs,a) and the corresponding value.
+        # Returns action values for given state.
         """

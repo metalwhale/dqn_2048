@@ -8,9 +8,8 @@ from math import ceil, log
 from random import choice
 from typing import List, Tuple
 
-from ...base import State as BaseState
+from ...base import State as BaseState, Action
 from .direction import Direction
-from .action import Action
 
 class State(BaseState):
     """
@@ -51,7 +50,7 @@ class State(BaseState):
         self._seeded()
 
     def executed(self, action: Action) -> float:
-        is_changed, total_merged_value = self._collapsed(action.direction)
+        is_changed, total_merged_value = self._collapsed(Direction(action.data))
         if is_changed:
             self._seeded()
         return total_merged_value

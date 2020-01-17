@@ -6,9 +6,9 @@ from __future__ import annotations
 
 from datetime import datetime
 from os import makedirs, path
-from typing import List, Tuple
+from typing import List
 
-from numpy import array, argmax, isinf, ndarray, random, zeros
+from numpy import array, isinf, ndarray, random, zeros
 from keras import Model
 from keras import backend as K
 from keras.layers import Dense, Input, Lambda
@@ -16,10 +16,8 @@ from keras.models import Sequential
 from keras.optimizers import SGD
 from tensorflow import where
 
-from ...base import Quality as BaseQuality, Experience
+from ...base import Action, Quality as BaseQuality, Experience
 from ..environment.state import State
-from ..environment.direction import Direction
-from ..environment.action import Action
 
 class Quality(BaseQuality):
     """
@@ -39,14 +37,13 @@ class Quality(BaseQuality):
             delta_clip: float. Used for calculating loss.
             learning_rate: float. Learning rate of the optimizer.
         """
-        super().__init__(gamma)
-        self.output_size = output_size
+        super().__init__(gamma, output_size)
         self.delta_clip = delta_clip
-        self._model = self._create_model(input_size, output_size)
+        self._model = self._create_model(input_size, self.output_size)
         # Create learning model which is actually used for training
         # For more details, see https://github.com/keras-rl/keras-rl/blob/master/rl/agents/dqn.py
         self._learning_model = self._create_learning_model(
-            self._model, output_size, learning_rate
+            self._model, self.output_size, learning_rate
         )
 
     def learn(self, batch: List[Experience]):
@@ -81,10 +78,8 @@ class Quality(BaseQuality):
         """
         return self._model.get_weights()
 
-    def _predict(self, state: State) -> Tuple[Action, float]:
-        values = self._model.predict(array([state.data]))[0]
-        max_index = argmax(values)
-        return (Action(Direction(max_index)), values[max_index])
+    def _predict(self, state: State) -> ndarray:
+        return self._model.predict(array([state.data]))[0]
 
     @staticmethod
     def _create_model(input_size: int, output_size: int) -> Model:
