@@ -6,14 +6,13 @@ from __future__ import annotations
 
 from datetime import datetime
 from os import makedirs, path
-from typing import List
+from typing import Callable, List
 
-from numpy import array, isinf, ndarray, random, zeros
+from numpy import array, inf, isinf, ndarray, random, zeros
 from keras import Model
 from keras import backend as K
-from keras.layers import Dense, Input, Lambda
-from keras.models import Sequential
-from keras.optimizers import SGD
+from keras.layers import Input, Lambda
+from keras.optimizers import Optimizer
 from tensorflow import where
 
 from ...base import Action, Quality as BaseQuality, Experience
@@ -26,24 +25,25 @@ class Quality(BaseQuality):
 
     def __init__(
             self,
-            gamma: float, input_size: int, output_size: int,
-            delta_clip: float, learning_rate: float
+            gamma: float, output_size: int,
+            model_builder: Callable[[int], Model], optimizer: Optimizer,
+            delta_clip: float = inf
         ):
         """
         # Arguments
             gamma: float. Gamma.
-            input_size: int. Input size of the model.
             output_size: int. Output size of the model.
+            model_builder: Callable[[int], Model]. Takes output size as param and returns model.
+            optimizer: Optimizer. Optimizer used when training model.
             delta_clip: float. Used for calculating loss.
-            learning_rate: float. Learning rate of the optimizer.
         """
         super().__init__(gamma, output_size)
         self.delta_clip = delta_clip
-        self._model = self._create_model(input_size, self.output_size)
+        self._model = model_builder(self.output_size)
         # Create learning model which is actually used for training
         # For more details, see https://github.com/keras-rl/keras-rl/blob/master/rl/agents/dqn.py
         self._learning_model = self._create_learning_model(
-            self._model, self.output_size, learning_rate
+            self._model, self.output_size, optimizer
         )
 
     def learn(self, batch: List[Experience]):
@@ -81,22 +81,7 @@ class Quality(BaseQuality):
     def _predict(self, state: State) -> ndarray:
         return self._model.predict(array([state.data]))[0]
 
-    @staticmethod
-    def _create_model(input_size: int, output_size: int) -> Model:
-        """
-        # Arguments
-            input_size: int. Input size.
-            output_size: int. Output size.
-        # Returns the model.
-        """
-        model = Sequential()
-        model.add(Dense(64, activation="relu", input_shape=(input_size,)))
-        model.add(Dense(32, activation="relu"))
-        model.add(Dense(output_size))
-        model.compile("sgd", loss="mse")
-        return model
-
-    def _create_learning_model(self, model: Model, output_size: int, learning_rate: float) -> Model:
+    def _create_learning_model(self, model: Model, output_size: int, optimizer: Optimizer) -> Model:
         """
         # Arguments
             model: Model. The main model to be "wrapped in".
@@ -113,7 +98,7 @@ class Quality(BaseQuality):
             lambda y_true, y_pred: y_pred,
             lambda y_true, y_pred: K.zeros_like(y_true)
         ]
-        learning_model.compile(SGD(learning_rate), loss=losses)
+        learning_model.compile(optimizer, loss=losses)
         return learning_model
 
     def _clipped_masked_error(self, args):

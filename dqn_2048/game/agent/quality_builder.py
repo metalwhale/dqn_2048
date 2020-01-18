@@ -2,7 +2,11 @@
 Quality builder
 """
 
+from typing import Callable
+
 from numpy import inf
+from keras import Model
+from keras.optimizers import Optimizer
 
 from ...base import QualityBuilder as BaseQualityBuilder
 from .quality import Quality
@@ -13,18 +17,18 @@ class QualityBuilder(BaseQualityBuilder):
     """
 
     def __init__(self):
-        self.input_size = 0
-        self.output_size = 0
         self.gamma = 0.0
+        self.output_size = 0
+        self.model_builder = None
+        self.optimizer = None
         self.delta_clip = inf
-        self.learning_rate = 0.0
 
-    def set_input_size(self, input_size: int):
+    def set_gamma(self, gamma: float):
         """
         # Arguments
-            input_size: int. Input size of the model.
+            gamma: float. The discount factor, used for Bellman approximation.
         """
-        self.input_size = input_size
+        self.gamma = gamma
         return self
 
     def set_output_size(self, output_size: int):
@@ -35,12 +39,20 @@ class QualityBuilder(BaseQualityBuilder):
         self.output_size = output_size
         return self
 
-    def set_gamma(self, gamma: float):
+    def set_model_builder(self, model_builder: Callable[[int], Model]):
         """
         # Arguments
-            gamma: float. The discount factor, used for Bellman approximation.
+            model_builder: Callable[[int], Model]. Model builder.
         """
-        self.gamma = gamma
+        self.model_builder = model_builder
+        return self
+
+    def set_optimizer(self, optimizer: Optimizer):
+        """
+        # Arguments
+            optimizer: Optimizer. Optimizer.
+        """
+        self.optimizer = optimizer
         return self
 
     def set_delta_clip(self, delta_clip: float):
@@ -51,16 +63,9 @@ class QualityBuilder(BaseQualityBuilder):
         self.delta_clip = delta_clip
         return self
 
-    def set_learning_rate(self, learning_rate: float):
-        """
-        # Arguments
-            learning_rate: float. Learning rate of the optimizer.
-        """
-        self.learning_rate = learning_rate
-        return self
-
     def build(self) -> Quality:
         return Quality(
-            self.gamma, self.input_size, self.output_size,
-            self.delta_clip, self.learning_rate
+            self.gamma, self.output_size,
+            self.model_builder, self.optimizer,
+            delta_clip=self.delta_clip
         )
