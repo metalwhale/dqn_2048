@@ -23,29 +23,29 @@ class Agent:
             self,
             quality_builder: QualityBuilder,
             batch_size: int,
-            experiences_count: int,
-            starting_step: int,
+            transitions_count: int,
+            warmup_steps_count: int,
             target_syncing_frequency: int
         ):
         """
         # Arguments
             quality_builder: QualityBuilder. Quality builder.
             batch_size: int. The batch size sampled from the transition buffer.
-            experiences_count: int. The maximum capacity of the buffer.
-            starting_step: int. The count of steps we wait for before starting training
+            transitions_count: int. The maximum capacity of the buffer.
+            warmup_steps_count: int. The count of steps we wait for before starting training
                 to populate the transition buffer.
             target_syncing_frequency: int. How frequently we sync model weights
                 from the training model to the target model,
                 which is used for getting the value of the next state in the Bellman approximation.
         """
         self.batch_size = batch_size
-        self.starting_step = starting_step
+        self.warmup_steps_count = warmup_steps_count
         self.target_syncing_frequency = target_syncing_frequency
         # Initialize parameters for Q(s, a) and Qˆ(s, a) with random weights
         # and empty transition buffer
         self._training_quality = quality_builder.build()
         self._target_quality = quality_builder.build()
-        self._transitions = deque(maxlen=experiences_count)
+        self._transitions = deque(maxlen=transitions_count)
         self._step = 0
 
     def observe(self, environment: Environment):
@@ -62,7 +62,7 @@ class Agent:
         transition = self._transit(environment, True)
         # Store transition in the transition buffer
         self._transitions.append(transition)
-        if self._step >= self.starting_step and len(self._transitions) >= self.batch_size:
+        if self._step >= self.warmup_steps_count and len(self._transitions) >= self.batch_size:
             # Sample a random batch from the buffer
             batch = [
                 Experience(t.old_state, t.action, self._target_quality.calculate(t))
