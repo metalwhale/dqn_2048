@@ -2,13 +2,11 @@
 Quality
 """
 
-from __future__ import annotations
-
 from abc import abstractmethod
 from random import choice
 from typing import List, Tuple
 
-from numpy import ndarray
+import numpy as np
 
 from ..environment.state import State
 from ..environment.action import Action
@@ -39,7 +37,7 @@ class Quality:
         """
 
     @abstractmethod
-    def copied(self, training_quality: Quality):
+    def copied(self, training_quality: "Quality"):
         """
         Copy weights from "training quality model".
         Used by the "target quality model" Qˆ.
@@ -97,7 +95,7 @@ class Quality:
         return (Action(index), values[index])
 
     @abstractmethod
-    def _predict(self, state: State) -> ndarray:
+    def _predict(self, state: State) -> np.ndarray:
         """
         # Arguments
             state: State. Observed state.

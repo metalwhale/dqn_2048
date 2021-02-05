@@ -1,0 +1,14 @@
+version: "2.4"
+services:
+    dqn_2048:
+        build:
+            context: ../dqn_2048
+            args:
+                - uname=$UNAME
+                - uid=$UID
+                - gid=$GID
+        image: ${IMAGE_PREFIX}/${UNAME}/dqn_2048
+        runtime: nvidia
+        volumes:
+            - ../dqn_2048:/home/${UNAME}/dqn_2048
+        tty: true

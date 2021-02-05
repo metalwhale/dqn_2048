@@ -2,18 +2,15 @@
 Quality
 """
 
-from __future__ import annotations
-
+import os
 from datetime import datetime
-from os import makedirs, path
 from typing import Callable, List
 
-from numpy import array, inf, isinf, ndarray, random, zeros
-from keras import Model
-from keras import backend as K
-from keras.layers import Input, Lambda
-from keras.optimizers import Optimizer
+import numpy as np
 from tensorflow import where
+from tensorflow.keras import Model, backend as K
+from tensorflow.keras.layers import Input, Lambda
+from tensorflow.keras.optimizers import Optimizer
 
 from ...base import Action, Quality as BaseQuality, Experience
 from ..environment.state import State
@@ -27,7 +24,7 @@ class Quality(BaseQuality):
             self,
             gamma: float, output_size: int,
             model_builder: Callable[[int], Model], optimizer: Optimizer,
-            delta_clip: float = inf
+            delta_clip: float = np.inf
         ):
         """
         # Arguments
@@ -48,9 +45,9 @@ class Quality(BaseQuality):
 
     def learn(self, batch: List[Experience]):
         state_data = []
-        targets = zeros((len(batch), self.output_size))
-        masks = zeros((len(batch), self.output_size))
-        dummies = random.rand(len(batch)) # Useless data, leaves the loss computation to lambda
+        targets = np.zeros((len(batch), self.output_size))
+        masks = np.zeros((len(batch), self.output_size))
+        dummies = np.random.rand(len(batch)) # Useless data, leaves the loss computation to lambda
         for i, experience in enumerate(batch):
             state: State = experience.state
             action: Action = experience.action
@@ -58,28 +55,27 @@ class Quality(BaseQuality):
             state_data.append(state.data)
             targets[i][action.data] = value
             masks[i][action.data] = 1.0
-        state_data = array(state_data)
-        targets = array(targets).astype("float")
-        masks = array(masks).astype("float")
+        state_data = np.array(state_data)
+        targets = np.array(targets).astype("float")
+        masks = np.array(masks).astype("float")
         self._learning_model.train_on_batch([state_data, targets, masks], [dummies, targets])
 
-    def copied(self, training_quality: Quality):
+    def copied(self, training_quality: "Quality"):
         self._model.set_weights(training_quality.weights)
 
     def save(self, dir_path: str):
-        makedirs(dir_path, exist_ok=True)
         now = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self._model.save_weights(path.join(dir_path, f"{now}.hdf5"))
+        self._model.save_weights(os.path.join(dir_path, f"{now}.hdf5"))
 
     @property
-    def weights(self) -> List[ndarray]:
+    def weights(self) -> List[np.ndarray]:
         """
         # Returns the weights of the model.
         """
         return self._model.get_weights()
 
-    def _predict(self, state: State) -> ndarray:
-        return self._model.predict(array([state.data]))[0]
+    def _predict(self, state: State) -> np.ndarray:
+        return self._model.predict(np.array([state.data]))[0]
 
     def _create_learning_model(self, model: Model, output_size: int, optimizer: Optimizer) -> Model:
         """
@@ -116,7 +112,7 @@ class Quality(BaseQuality):
         See https://github.com/keras-rl/keras-rl/blob/master/rl/util.py
         """
         diff = y_true - y_pred
-        if isinf(clip_value):
+        if np.isinf(clip_value):
             return 0.5 * K.square(diff)
         condition = K.abs(diff) < clip_value
         squared_loss = 0.5 * K.square(diff)

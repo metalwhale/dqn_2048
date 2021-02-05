@@ -2,8 +2,6 @@
 State
 """
 
-from __future__ import annotations
-
 from math import ceil, log
 from random import choice
 from typing import List, Tuple
@@ -34,7 +32,7 @@ class State(BaseState):
             self.unit = unit
             self._cleared()
 
-    def __eq__(self, other: State) -> bool:
+    def __eq__(self, other: "State") -> bool:
         return self._board == other._board
 
     def __str__(self):

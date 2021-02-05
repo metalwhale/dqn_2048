@@ -4,9 +4,9 @@ Quality builder
 
 from typing import Callable
 
-from numpy import inf
-from keras import Model
-from keras.optimizers import Optimizer
+import numpy as np
+from tensorflow.keras import Model
+from tensorflow.keras.optimizers import Optimizer
 
 from ...base import QualityBuilder as BaseQualityBuilder
 from .quality import Quality
@@ -21,7 +21,7 @@ class QualityBuilder(BaseQualityBuilder):
         self.output_size = 0
         self.model_builder = None
         self.optimizer = None
-        self.delta_clip = inf
+        self.delta_clip = np.inf
 
     def set_gamma(self, gamma: float):
         """
