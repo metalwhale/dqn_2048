@@ -64,10 +64,9 @@ class Agent:
         self._transitions.append(transition)
         if self._step >= self.warmup_steps_count and len(self._transitions) >= self.batch_size:
             # Sample a random batch from the buffer
-            batch = [
-                Experience(t.old_state, t.action, self._target_quality.calculate(t))
-                for t in sample(self._transitions, self.batch_size)
-            ]
+            transitions = sample(self._transitions, self.batch_size)
+            values = self._target_quality.calculate(transitions)
+            batch = [Experience(t.old_state, t.action, v) for t, v in zip(transitions, values)]
             # Update Q(s, a)
             self._training_quality.learn(batch)
         self._step += 1

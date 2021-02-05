@@ -51,7 +51,7 @@ class State(BaseState):
         is_changed, total_merged_value = self._collapsed(Direction(action.data))
         if is_changed:
             self._seeded()
-        return total_merged_value
+        return 0 if total_merged_value == 0 else log(total_merged_value) / log(self._max)
 
     def is_ended(self):
         return not self._is_collapsible()

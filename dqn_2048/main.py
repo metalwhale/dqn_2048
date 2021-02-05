@@ -1,3 +1,7 @@
+"""
+Main
+"""
+
 import os
 from pathlib import Path
 from sys import argv, stdout
@@ -18,13 +22,13 @@ BOARD_UNIT = 2
 GAMMA = 0.99
 
 BATCH_SIZE = TRANSITIONS_COUNT = WARMUP_STEPS_COUNT = 5000
-TARGET_SYNCING_FREQUENCY = 1000
+TARGET_SYNCING_FREQUENCY = 500
 EPSILON_START = 1.0
 EPSILON_END = 0.02
 EPSILON_DECAY_RATE = 50000
 
 STEPS_COUNT = 200000
-PLAY_EPISODES_COUNT = 100
+PLAY_EPISODES_COUNT = 10
 
 if len(argv) < 2:
     print("Usage: python main.py <gpu_id>")
@@ -71,7 +75,7 @@ with open(os.path.join(result_path, "log.txt"), "w+") as log_file:
             stdout.write(f"STEP: {step}\n")
             stdout.flush()
         # Evaluate before observing next state
-        if step % TARGET_SYNCING_FREQUENCY == 0:
+        if step % TARGET_SYNCING_FREQUENCY == 0 and step >= WARMUP_STEPS_COUNT:
             stdout.write("Evaluating\n")
             stdout.flush()
             total_reward = 0

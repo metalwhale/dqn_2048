@@ -3,7 +3,6 @@ Quality
 """
 
 import os
-from datetime import datetime
 from typing import Callable, List
 
 import numpy as np
@@ -58,14 +57,13 @@ class Quality(BaseQuality):
         state_data = np.array(state_data)
         targets = np.array(targets).astype("float")
         masks = np.array(masks).astype("float")
-        self._learning_model.train_on_batch([state_data, targets, masks], [dummies, targets])
+        self._learning_model.fit([state_data, targets, masks], [dummies, targets])
 
     def copied(self, training_quality: "Quality"):
         self._model.set_weights(training_quality.weights)
 
     def save(self, dir_path: str):
-        now = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self._model.save_weights(os.path.join(dir_path, f"{now}.hdf5"))
+        self._model.save_weights(os.path.join(dir_path, "last.hdf5"))
 
     @property
     def weights(self) -> List[np.ndarray]:
@@ -74,8 +72,8 @@ class Quality(BaseQuality):
         """
         return self._model.get_weights()
 
-    def _predict(self, state: State) -> np.ndarray:
-        return self._model.predict(np.array([state.data]))[0]
+    def _predict(self, states: List[State]) -> np.ndarray:
+        return self._model.predict(np.array([s.data for s in states]))
 
     def _create_learning_model(self, model: Model, output_size: int, optimizer: Optimizer) -> Model:
         """

@@ -60,7 +60,8 @@ class Quality:
             state: State. Observed state.
         # Returns action with max value.
         """
-        return self._select(state)[0]
+        actions, _ = self._select([state])
+        return actions[0]
 
     def randomly_act(self) -> Action:
         """
@@ -68,36 +69,40 @@ class Quality:
         """
         return Action(choice(range(self.output_size)))
 
-    def calculate(self, transition: Transition) -> float:
+    def calculate(self, transitions: List[Transition]) -> List[float]:
         """
         Calculate target y = r if the episode has ended at this step,
             or y = r + γ * maxa'∈A(Qˆs',a') otherwise.
         Used by the "target quality model" Qˆ.
         # Arguments
-            transition: Transition. The transition in the buffer.
-        # Returns the discounted cumulative reward.
+            transitions: List[Transition]. Sample of transitions in the buffer.
+        # Returns list of discounted cumulative rewards.
         """
-        next_state = transition.state
-        reward = transition.reward
-        if next_state.is_ended():
-            return reward
-        value = self._select(next_state)[1]
-        return reward + self.gamma * value
+        next_states = [t.state for t in transitions]
+        rewards = [t.reward for t in transitions]
+        _, values = self._select(next_states)
+        return [
+            r if s.is_ended() else r + self.gamma * v
+            for s, r, v in zip(next_states, rewards, values)
+        ]
 
-    def _select(self, state: State) -> Tuple[Action, float]:
+    def _select(self, states: List[State]) -> Tuple[List[Action], List[float]]:
         """
         # Arguments
-            state: State. Used for selecting best action.
-        # Returns best action with a = argmaxa(Qs,a) and the corresponding value.
+            states: List[State]. Used for selecting best actions.
+        # Returns list of best actions with a = argmaxa(Qs,a) and the corresponding values.
         """
-        values = self._predict(state)
-        index = values.argmax()
-        return (Action(index), values[index])
+        values = self._predict(states)
+        indices = values.argmax(axis=1)
+        return (
+            [Action(index) for index in indices],
+            [values[i][index] for i, index in enumerate(indices)]
+        )
 
     @abstractmethod
-    def _predict(self, state: State) -> np.ndarray:
+    def _predict(self, states: List[State]) -> np.ndarray:
         """
         # Arguments
-            state: State. Observed state.
-        # Returns action values for given state.
+            states: List[State]. List of observed states.
+        # Returns list of action values for given states.
         """
