@@ -16,24 +16,22 @@ class Agent(BaseAgent):
         super().__init__(*args)
         self.epsilon_start = 1.0
         self.epsilon_end = 0.0
-        self.epsilon_decay_rate = 0
+        self.epsilon_decay_steps = 0
 
-    def set_epsilons(self, start: float, end: float, decay_rate: int):
+    def set_epsilons(self, start: float, end: float, decay_steps: int):
         """
         # Arguments
             start: float. Starting positive epsilon value.
             end: float. Ending positive epsilon value, less than `epsilon_start`.
-            decay_rate: int. The rate of epsilon decay schedule.
+            decay_steps: int. The number of steps of epsilon decay schedule.
         """
         self.epsilon_start = start
         self.epsilon_end = end
-        self.epsilon_decay_rate = decay_rate
+        self.epsilon_decay_steps = decay_steps
 
     def _make_decision(self) -> Decision:
         # With probability ε, select a random action, otherwise use quality model to act
-        epsilon = max(
-            self.epsilon_start - self._step / self.epsilon_decay_rate,
-            self.epsilon_end
-        )
-        is_exploring = uniform(0, self.epsilon_start) < epsilon
+        start, end, decay_steps = self.epsilon_start, self.epsilon_end, self.epsilon_decay_steps
+        epsilon = max((end - start) * self._step / decay_steps + start, end)
+        is_exploring = uniform(0, start) < epsilon
         return Decision.EXPLORE if is_exploring else Decision.EXPLOIT
